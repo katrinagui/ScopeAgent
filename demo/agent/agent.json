@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "question": "分析这段波形，指出证据不足的部分并提出补测建议。",
+  "status": "completed",
+  "mode": "local_rules",
+  "narrative_verified": true,
+  "summary": "已分析 2 个通道；用户限值结果：pass。结论限于导入采样记录。",
+  "evidence_ids": [
+    "E001",
+    "E002",
+    "E003"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "source_kind": "synthetic_demo",
+  "synthetic": true,
+  "acquisition_mode": "generated_contiguous_samples",
+  "sample_rate_hz": 1000000,
+  "instrument": null,
+  "probe_ratio": null,
+  "calibration": "not_applicable_synthetic"
+}

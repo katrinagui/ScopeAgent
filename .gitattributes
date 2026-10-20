@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.url text eol=crlf
+*.csv -text !eol whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.png binary

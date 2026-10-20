@@ -1,0 +1,199 @@
+{
+  "schema_version": 2,
+  "version": "0.2.0",
+  "source": {
+    "name": "synthetic_waveforms.csv",
+    "sha256": "2a70f4301adf4c7319d1cbdffc8ed91e90153334f297c69e6fe87cd59d633c3b",
+    "kind": "offline_csv_unverified_acquisition"
+  },
+  "metadata": {
+    "source_kind": "synthetic_demo",
+    "synthetic": true,
+    "acquisition_mode": "generated_contiguous_samples",
+    "sample_rate_hz": 1000000,
+    "instrument": null,
+    "probe_ratio": null,
+    "calibration": "not_applicable_synthetic"
+  },
+  "metadata_sha256": "2462fee56098fee5273e097bf1638a8a6ff0e05f99fed9c36efd384a1afd3a1a",
+  "limits": {
+    "SYNTH_SINE_V": {
+      "vpp_v": {
+        "min": 1.9,
+        "max": 2.1
+      },
+      "frequency_hz": {
+        "min": 4900,
+        "max": 5100
+      }
+    },
+    "SYNTH_PWM_V": {
+      "duty_cycle_pct": {
+        "min": 29,
+        "max": 31
+      }
+    }
+  },
+  "limits_sha256": "a437826171fff67583610dfb1e3a25a97a75d7168bc11ca5b7448aa0103ce395",
+  "reference": null,
+  "channels": {
+    "SYNTH_SINE_V": {
+      "sample_count": 20000,
+      "duration_s": 0.019999,
+      "median_sample_interval_s": 1.0000000000001327e-06,
+      "uniform_sampling_within_1pct": true,
+      "largest_sample_gap_s": 1.000000000001e-06,
+      "statistics": {
+        "min_v": -0.8,
+        "max_v": 1.2,
+        "vpp_v": 2.0,
+        "mean_v": 0.2000007853082424,
+        "rms_v": 0.7348641307794466,
+        "ac_rms_v": 0.7071244420767236,
+        "method": "time-weighted trapezoidal sampled moments"
+      },
+      "estimated_levels": {
+        "low_v": -0.7876883405951376,
+        "high_v": 1.1876883405951377,
+        "method": "5th/95th percentiles"
+      },
+      "timing": {
+        "status": "periodic_candidate",
+        "rising_edges": 99,
+        "falling_edges": 100,
+        "complete_periods": 98,
+        "frequency_hz": 4999.999999999998,
+        "duty_cycle_pct": 50.0,
+        "period_variation_observed_s": 1.1449262525471098e-18,
+        "short_pulse_candidates": 0,
+        "median_period_s": 0.0002000000000000001,
+        "unusual_period_indices": [],
+        "unusual_period_intervals_s": [],
+        "median_high_width_s": 9.99999999999994e-05
+      },
+      "spectrum": {
+        "status": "windowed_fft_bin_estimate",
+        "dominant_bin_hz": 4999.999999999336,
+        "bin_spacing_hz": 49.99999999999336,
+        "nyquist_hz": 499999.99999993364,
+        "window": "Hann",
+        "is_fundamental_verified": false
+      },
+      "rise_time": {
+        "status": "observed_estimate",
+        "observed_s": 5.799955809484918e-05,
+        "transitions_used": 99,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "fall_time": {
+        "status": "observed_estimate",
+        "observed_s": 5.799955809484929e-05,
+        "transitions_used": 100,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "warnings": [
+        "ADC range, probe calibration, analog bandwidth and acquisition gaps outside this record are unknown."
+      ],
+      "pass_fail": "pass"
+    },
+    "SYNTH_PWM_V": {
+      "sample_count": 20000,
+      "duration_s": 0.019999,
+      "median_sample_interval_s": 1.0000000000001327e-06,
+      "uniform_sampling_within_1pct": true,
+      "largest_sample_gap_s": 1.000000000001e-06,
+      "statistics": {
+        "min_v": 0.0,
+        "max_v": 3.3,
+        "vpp_v": 3.3,
+        "mean_v": 0.9917820891044552,
+        "rms_v": 1.8091105256574849,
+        "ac_rms_v": 1.5130264973807648,
+        "method": "time-weighted trapezoidal sampled moments"
+      },
+      "estimated_levels": {
+        "low_v": 0.0,
+        "high_v": 3.3,
+        "method": "5th/95th percentiles"
+      },
+      "timing": {
+        "status": "periodic_candidate",
+        "rising_edges": 19,
+        "falling_edges": 20,
+        "complete_periods": 18,
+        "frequency_hz": 1000.0,
+        "duty_cycle_pct": 30.099999999999945,
+        "period_variation_observed_s": 9.857697483082738e-19,
+        "short_pulse_candidates": 0,
+        "median_period_s": 0.001,
+        "unusual_period_indices": [],
+        "unusual_period_intervals_s": [],
+        "median_high_width_s": 0.0003009999999999992
+      },
+      "spectrum": {
+        "status": "windowed_fft_bin_estimate",
+        "dominant_bin_hz": 999.9999999998672,
+        "bin_spacing_hz": 49.99999999999336,
+        "nyquist_hz": 499999.99999993364,
+        "window": "Hann",
+        "is_fundamental_verified": false
+      },
+      "rise_time": {
+        "status": "sample_limited",
+        "observed_s": 8.000000000004531e-07,
+        "transitions_used": 19,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "fall_time": {
+        "status": "sample_limited",
+        "observed_s": 8.000000000013205e-07,
+        "transitions_used": 20,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "warnings": [
+        "ADC range, probe calibration, analog bandwidth and acquisition gaps outside this record are unknown."
+      ],
+      "pass_fail": "pass"
+    }
+  },
+  "limit_evaluation": {
+    "status": "pass",
+    "checks": [
+      {
+        "channel": "SYNTH_SINE_V",
+        "metric": "vpp_v",
+        "value": 2.0,
+        "bounds": {
+          "min": 1.9,
+          "max": 2.1
+        },
+        "status": "pass"
+      },
+      {
+        "channel": "SYNTH_SINE_V",
+        "metric": "frequency_hz",
+        "value": 4999.999999999998,
+        "bounds": {
+          "min": 4900,
+          "max": 5100
+        },
+        "status": "pass"
+      },
+      {
+        "channel": "SYNTH_PWM_V",
+        "metric": "duty_cycle_pct",
+        "value": 30.099999999999945,
+        "bounds": {
+          "min": 29,
+          "max": 31
+        },
+        "status": "pass"
+      }
+    ],
+    "scope": "This sampled record and these limits only; not device certification."
+  }
+}

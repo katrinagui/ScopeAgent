@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ScopeAgent · 离线分析与实时示波</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/live.css">
+  <script src="/app.js" defer></script>
+  <script src="/live.js" defer></script>
+</head>
+<body>
+<svg class="icon-defs" aria-hidden="true"><defs>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 12h4l3-8 6 16 3-8h4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H5v20h14V7zM14 2v6h5M8 12h8M8 16h6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .5-1.5 1-1.5 2.5M12 17h.01"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</defs></svg>
+<a class="skip-link" href="#main">跳到波形工作台</a>
+<aside class="sidebar" aria-label="主导航">
+  <a class="brand" href="/" aria-label="ScopeAgent 首页"><span class="brand-mark"><svg><use href="#i-wave"/></svg></span><span>Scope<span class="brand-light">Agent</span></span></a>
+  <nav>
+    <a class="nav-item active" id="offline-nav" href="#main" aria-label="离线分析" aria-current="page"><svg><use href="#i-grid"/></svg><span>离线分析</span><span class="nav-active-dot"></span></a>
+    <button class="nav-item" id="live-nav" aria-label="实时示波" aria-controls="live-workspace"><svg><use href="#i-wave"/></svg><span>实时示波</span></button>
+    <a class="nav-item" id="evidence-nav" href="#measurements" aria-label="测量与证据"><svg><use href="#i-file"/></svg><span>测量与证据</span></a>
+    <button class="nav-item" id="help-button" aria-label="使用说明"><svg><use href="#i-help"/></svg><span>使用说明</span></button>
+  </nav>
+  <div class="local-status"><span class="status-dot"></span><span>本地工作台</span><svg><use href="#i-wave"/></svg></div>
+</aside>
+<main id="main" tabindex="-1">
+  <header class="topbar"><div class="breadcrumb">工作台<span>/</span><strong>离线分析</strong></div><div class="topbar-right"><span class="offline-label"><span class="status-dot"></span>本地运行</span><button class="icon-button" id="about-button" aria-label="查看运行与隐私说明"><svg><use href="#i-help"/></svg></button></div></header>
+  <div class="workspace">
+    <section id="live-workspace" aria-labelledby="live-title" hidden>
+      <div class="page-heading"><div><h1 id="live-title">实时示波</h1></div><span class="badge sample" id="live-source-badge">动态合成演示</span></div>
+      <div id="live-error" class="notice" role="alert" hidden></div>
+      <form id="live-form" class="live-settings">
+        <div class="live-fields">
+          <label>数据来源<select id="live-source" aria-label="数据来源"><option value="demo">合成演示</option><option value="instrument">实际示波器</option></select></label>
+          <label>查看方式<select id="live-view" aria-label="查看方式"><option value="curve">波形曲线</option><option value="screen" disabled>示波器原屏截图</option></select></label>
+          <label>刷新间隔<select id="live-interval" aria-label="目标刷新间隔"><option value="200">200 ms</option><option value="500" selected>500 ms</option><option value="1000">1 秒</option><option value="2000">2 秒</option><option value="5000">5 秒</option></select></label>
+          <label id="live-channel-field" for="live-channel" hidden>模拟通道<select id="live-channel"><option value="1">CH1</option><option value="2">CH2</option><option value="3">CH3</option><option value="4">CH4</option></select></label>
+        </div>
+        <div id="live-device-panel" class="live-device-panel" hidden>
+          <div class="live-device-row"><label for="live-device">选择实际设备<select id="live-device"><option value="">尚未识别设备</option></select></label><button type="button" class="button secondary" id="device-scan">扫描已连接设备</button></div>
+          <div class="live-device-row"><label id="live-resource-field" for="live-resource">IP / VISA 地址<input id="live-resource" maxlength="200" placeholder="例如 192.168.1.100 或 USB VISA 地址" autocomplete="off" spellcheck="false"></label><button type="button" class="button secondary" id="device-identify">识别这台设备</button></div>
+          <p id="device-info" class="device-info" role="status" aria-live="polite">扫描设备，或填写地址后识别。</p>
+          <details class="quiet-details"><summary>设备详情与连接说明</summary><p id="device-details">识别后显示型号、序列号和固件。</p><p>扫描依赖 VISA 后端，结果可能不完整。未适配的型号可导出 CSV 后离线分析。</p></details>
+        </div>
+        <label id="live-ack-field" class="live-ack" hidden><input type="checkbox" id="live-ack">允许连接和读取；传输设置可能改变，不自动恢复。</label>
+        <div class="live-actions"><button type="submit" class="button primary" id="live-start"><svg><use href="#i-wave"/></svg>开始监看</button><button type="button" class="button secondary" id="live-stop" disabled>停止监看</button><button type="button" class="button secondary" id="live-freeze" disabled><svg><use href="#i-spark"/></svg>冻结此帧并分析</button><span id="live-state" role="status" aria-live="polite">尚未开始</span></div>
+      </form>
+      <section class="wave-panel live-panel" aria-label="实时信号视图">
+        <div class="panel-header"><div><span class="section-mark"></span><h2>信号监看</h2></div><span class="muted" id="live-frame-number">等待第一帧</span></div>
+        <div class="scope-display live-display" id="live-display"><div class="scope-toolbar"><div id="live-channels" class="channel-toggles"></div><span class="scope-meta" id="live-timebase">TIME / ms</span></div><div class="canvas-wrap"><canvas id="live-canvas" aria-label="实时波形曲线，数值见下方当前帧测量"></canvas><p id="live-empty">点击「开始监看」，体验持续变化的合成波形。</p></div><img id="live-screen" alt="示波器当前屏幕截图" hidden></div>
+        <div class="live-health"><span id="live-rate">接收帧率 —</span><span id="live-updated">尚未接收</span><span id="live-age">数据年龄 —</span></div>
+      </section>
+      <div id="live-metrics" class="live-metrics" aria-label="当前帧测量"></div>
+      <details class="quiet-details live-notes"><summary>监看说明</summary>
+      <p class="live-explanation" id="live-explanation">动态合成演示由软件逐帧生成，幅度、频率和占空比会缓慢变化；不是仪器数据。冻结后使用该帧完整采样分析。</p>
+      <p class="live-limit">这里是周期监看，不是连续无遗漏录波。接收帧率不等于采样率；设备处于停止状态时可能重复返回同一记录。罕见事件仍需硬件触发。</p>
+      </details>
+    </section>
+    <div id="offline-workspace">
+    <section class="page-heading"><div><h1>离线分析</h1></div><div class="page-actions"><button class="button secondary" id="export-button" aria-label="导出报告" disabled><svg><use href="#i-download"/></svg><span>导出报告</span></button><button class="button primary" id="import-button"><svg><use href="#i-plus"/></svg>导入波形</button></div></section>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <section class="record-strip" aria-label="当前记录"><div class="file-icon"><svg><use href="#i-wave"/></svg></div><div class="record-title"><strong id="source-name">正在载入演示波形…</strong><div id="source-description">在本机计算测量结果</div></div><span class="badge sample" id="source-badge">合成演示</span><button class="text-button" id="demo-button">载入演示 <span>↗</span></button></section>
+    <div class="workbench-grid">
+      <div class="signal-column">
+        <section class="wave-panel" aria-labelledby="wave-title">
+          <div class="panel-header"><div><span class="section-mark"></span><h2 id="wave-title">波形视图</h2><span class="muted" id="plot-samples"></span></div><div class="plot-tools"><button class="icon-button" id="zoom-out" aria-label="缩小时间范围" title="缩小时间范围"><svg><use href="#i-minus"/></svg></button><button class="icon-button" id="zoom-in" aria-label="放大时间范围" title="放大时间范围"><svg><use href="#i-plus"/></svg></button><button class="icon-button" id="fit-view" aria-label="显示整段波形" title="显示整段波形"><svg><use href="#i-target"/></svg></button></div></div>
+          <div class="scope-display" id="scope-display" aria-busy="true"><div class="scope-toolbar"><div id="channel-toggles" class="channel-toggles"></div><span id="time-division" class="scope-meta">TIME / ms</span></div><div class="canvas-wrap"><canvas id="wave-canvas" aria-label="电压随时间变化的波形。可以拖动选择时间段，也可使用下方数值输入框操作。" role="img"></canvas><div id="plot-tooltip" class="plot-tooltip" hidden></div><div id="plot-loading" class="plot-loading">正在读取原始采样<span class="loading-line"></span></div></div><div class="scope-footer"><span>拖动选择区间</span><span id="view-duration">—</span></div></div>
+          <div class="range-bar"><span class="range-label">复查选区</span><div class="range-inputs"><label><span class="sr-only">开始时间（毫秒）</span><input id="range-start" type="number" step="any" aria-label="开始时间（毫秒）"><span>ms</span></label><span class="range-separator">→</span><label><span class="sr-only">结束时间（毫秒）</span><input id="range-end" type="number" step="any" aria-label="结束时间（毫秒）"><span>ms</span></label></div><select id="inspect-channel" aria-label="选择复查通道"></select><button class="button small secondary" id="inspect-button" disabled><svg><use href="#i-target"/></svg>复查选区</button></div>
+        </section>
+        <section class="measure-panel" id="measurements" aria-labelledby="measure-title"><div class="panel-header"><div><h2 id="measure-title">测量结果</h2><span class="subtle-label">整段记录</span></div><div class="tabs" role="tablist" aria-label="测量详情"><button id="tab-measures" role="tab" aria-selected="true" aria-controls="pane-measures" tabindex="0">测量</button><button id="tab-evidence" role="tab" aria-selected="false" aria-controls="pane-evidence" tabindex="-1">证据 <span id="evidence-count">0</span></button></div></div><div id="pane-measures" role="tabpanel" aria-labelledby="tab-measures"><div class="table-scroll"><table><caption class="sr-only">原始采样记录的各通道测量</caption><thead><tr><th scope="col">通道</th><th scope="col">频率</th><th scope="col">峰峰值</th><th scope="col">RMS</th><th scope="col">占空比</th><th scope="col">限值</th></tr></thead><tbody id="measurement-rows"><tr><td colspan="6">正在计算测量…</td></tr></tbody></table></div><div class="measurement-footnote"><span class="info-dot">i</span><span>结果仅限当前记录，频率为周期候选。</span></div></div><div id="pane-evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden><div id="evidence-list" class="evidence-list"></div></div></section>
+        <div class="record-footer"><span id="record-quality">采样质量检查中</span><details class="record-details"><summary>记录信息</summary><code id="source-hash"></code></details></div>
+      </div>
+      <aside class="agent-panel" aria-labelledby="agent-title"><div class="agent-heading"><span class="agent-symbol"><svg><use href="#i-spark"/></svg></span><div><h2 id="agent-title">分析助手</h2></div><span class="agent-status" id="agent-status">就绪</span></div><div class="agent-body" id="agent-body"><div class="agent-intro"><h3>先看信号，再下结论。</h3><p>正在读取当前记录的测量与质量信息。</p></div><div id="analysis-content" aria-live="polite"></div></div><form class="question-box" id="question-form"><label for="question">继续分析</label><div class="question-presets"><button type="button" data-question="检查周期稳定性与采样分辨率。">检查周期</button><button type="button" data-question="检查幅度，并说明边沿测量是否受限。">复查边沿</button><button type="button" data-question="指出证据缺口，并给出下一步补测计划。">补测建议</button></div><textarea id="question" maxlength="8000" rows="3" placeholder="输入问题…"></textarea><div class="question-actions"><label class="mode-select"><span class="status-dot"></span><select id="analysis-mode" aria-label="分析方式"><option value="local">本地规则</option><option value="llm" disabled>模型分析 · 未配置</option></select></label><button type="button" class="text-button model-settings-button" id="model-settings">模型设置</button><button class="send-button" type="submit" id="analyze-button" aria-label="开始分析" disabled><svg><use href="#i-arrow"/></svg></button></div><p class="mode-hint" id="mode-hint">本地计算，无需模型。</p></form></aside>
+    </div>
+    </div>
+    <footer class="workspace-footer"><span id="instrument-status">当前未连接仪器</span></footer>
+  </div>
+</main>
+<dialog id="import-dialog" aria-labelledby="import-title"><form id="upload-form"><div class="dialog-header"><div><h2 id="import-title">导入波形记录</h2></div><button type="button" class="icon-button dialog-close" aria-label="关闭导入窗口"><svg><use href="#i-close"/></svg></button></div><p class="dialog-description">CSV 使用秒（s）和伏特（V）。</p><label class="file-drop" id="file-drop" for="wave-file"><svg><use href="#i-upload"/></svg><strong id="wave-file-label">选择或拖入波形 CSV</strong><span>time_s、CH1_V… · 合计不超过 32 MiB</span><input id="wave-file" type="file" accept=".csv,text/csv" required></label><details class="optional-files"><summary>参考记录与测试条件 <span>可选</span></summary><label>参考波形 CSV<input id="reference-file" type="file" accept=".csv,text/csv"></label><label>测试限值 JSON<input id="limits-file" type="file" accept=".json,application/json"></label><label>采集说明 JSON<input id="metadata-file" type="file" accept=".json,application/json"></label><p>限值与采集说明每份不超过 128 KiB。未提供限值时，不判断合格。</p></details><div class="dialog-error" id="upload-error" role="alert" hidden></div><div class="dialog-actions"><button type="button" class="button secondary dialog-close">取消</button><button type="submit" class="button primary" id="upload-submit">导入并分析 <svg><use href="#i-arrow"/></svg></button></div></form></dialog>
+<dialog id="model-dialog" aria-labelledby="model-title">
+  <form id="model-form" autocomplete="off">
+    <div class="dialog-header"><div><h2 id="model-title">模型设置</h2></div><button type="button" class="icon-button dialog-close" aria-label="关闭模型设置"><svg><use href="#i-close"/></svg></button></div>
+    <p class="model-description">开始分析会发送问题和测量结果，可能产生费用。</p>
+    <p id="model-current" class="model-description" role="status"></p>
+    <label class="model-field" for="model-url">服务地址（Base URL）<input id="model-url" type="url" required maxlength="2048" placeholder="https://服务商地址/v1" spellcheck="false"></label>
+    <label class="model-field" for="model-name">模型名称<input id="model-name" type="text" required maxlength="200" placeholder="服务商提供的模型名称" spellcheck="false"></label>
+    <label class="model-field" for="model-key">API Key<input id="model-key" type="password" maxlength="8192" autocomplete="off" placeholder="免鉴权服务可留空" spellcheck="false"><small id="model-key-hint">仅当前服务有效，重启后需重新配置。</small></label>
+    <p class="model-description">保存时需重填密钥，留空会清除旧值。</p><details class="quiet-details"><summary>连接说明</summary><p>服务需支持 Chat Completions 工具调用。填 API 根地址，不含 /chat/completions；远端使用 HTTPS，本机可用 HTTP。</p><p>保存只检查格式，不验证连通性。设置在本机服务的多个页面间共享；密钥不写文件或浏览器存储，关闭弹窗后清空输入框。</p></details>
+    <div id="model-error" class="dialog-error" role="alert" hidden></div>
+    <div class="dialog-actions"><button type="button" class="button secondary" id="model-disable">停用模型</button><button type="button" class="button secondary dialog-close">取消</button><button type="submit" class="button primary" id="model-save">保存设置</button></div>
+  </form>
+</dialog>
+
+<dialog id="help-dialog" aria-labelledby="help-title">
+  <div class="dialog-header help-header"><div><h2 id="help-title">使用说明</h2><p>展开下方章节，查看连接步骤与实用操作。</p></div><button type="button" class="icon-button dialog-close" aria-label="关闭使用说明" autofocus><svg><use href="#i-close"/></svg></button></div>
+  <div class="help-content">
+    <div class="help-note"><strong>先确认使用条件</strong><p>没有设备：Python 3.12+ 与 NumPy 即可体验动态演示。有设备：选择「实际示波器」，扫描或填地址后识别实际厂商、型号和序列号，再匹配功能。扫描需要 VISA 后端；当前波形 / 截图适配器仍为 MSO5000，需 Python 3.14+ 与 pymso5000 0.2.0。其他型号可显示身份，但未适配时不能监看。LAN、USB 和真实设备兼容性均待现场验收。</p><p>文件夹内可双击「打开网页工作台.cmd」启动并打开浏览器；已有服务时可直接双击「网页入口.url」。两者默认使用 8765 端口。</p></div>
+
+    <details class="help-section">
+      <summary><span class="help-step">01</span>没有设备：先体验动态演示</summary>
+      <div class="help-section-body">
+        <ol class="help-steps">
+          <li><strong>打开实时入口</strong><p>关闭本说明，在左侧导航点击「实时示波」；窄屏中对应波形图标。数据来源保留「合成演示」，查看方式为「波形曲线」。</p></li>
+          <li><strong>开始观察</strong><p>选择 500 ms 目标刷新间隔，点击「开始监看」。黄色为正弦、青色为 PWM；软件每帧重新生成 5,000 点 / 通道，幅度、频率和占空比会缓慢变化。点击通道标签可隐藏 / 显示曲线。</p></li>
+          <li><strong>把观察交给 Agent</strong><p>留意下方的峰峰值、RMS 和阈值占空比；点击「冻结此帧并分析」，进入该帧的完整采样分析。也可先「停止监看」，保留最后一帧再冻结。</p></li>
+        </ol>
+        <p class="help-tip">演示是动态合成信号，不是示波器采样，也不是旧 CSV 循环播放。无需 API Key、硬件依赖或连接许可；演示模式没有仪器原屏截图。</p>
+      </div>
+    </details>
+
+    <details class="help-section">
+      <summary><span class="help-step">02</span>连接示波器：接线、IP 和运行环境</summary>
+      <div class="help-section-body">
+        <h3>1. 接好网络与待测信号</h3>
+        <p>将示波器后面板的 LAN 网口接到路由器 / 交换机；电脑接入同一可互通的局域网。电脑可以有线或无线接入，但访客 Wi-Fi、客户端隔离、不同 VLAN 等设置可能阻断通信。</p>
+        <p>把探头接到待测通道，在示波器面板上先确认能看到信号，核对输入限值、接地方式、探头倍率、电压单位 V、量程、耦合与触发。本项目不会自动打开通道或替你调整时基、量程、触发。</p>
+
+        <h3>2. 在示波器上查 IP（以 MSO5000 为例）</h3>
+        <p>MSO5000 官方手册的路径为 <strong>Utility → IO → LAN</strong>。有路由器分配地址时，可使用 DHCP，等待网络配置成功，记下 LAN 页面显示的 IPv4 和 VISA 地址；不同固件的文字可能略有不同。</p>
+        <p>例如，设备实际显示 <code>192.168.1.100</code> 时，可输入该 IP，或 <code>TCPIP::192.168.1.100::INSTR</code>。也接受带主机名的 TCPIP INSTR、完整 USB INSTR 资源；USB 地址应从 VISA 后端或厂商工具获取，不能只填「USB」。不接受 http://、网页路径或 SOCKET 资源。扫描可能发现不完整，此时手动填实际地址再识别。</p>
+        <p class="help-tip"><strong>两个地址不要混淆：</strong><code>http://127.0.0.1:8765/</code> 是电脑上的工作台；设备 IP 填在「IP / VISA 地址」输入框中。打开工作台并不表示已经连接示波器。</p>
+
+        <details class="help-subsection"><summary>没有路由器，电脑与示波器网线直连怎么办？</summary><div>
+          <p>可使用同一网段的静态 IPv4。仅作示例：专用有线网卡设为 <code>192.168.50.10</code>，示波器设为 <code>192.168.50.20</code>，双方子网掩码均为 <code>255.255.255.0</code>。两个地址必须不同，且该网段不能与现有网络冲突。</p>
+          <p>在示波器 LAN 页面使用 Static IP 时，按手册关闭 DHCP 和 Auto IP，再填写静态参数。电脑则修改连接示波器的那块有线网卡的 IPv4 设置。同网段直连通常不需要网关 / DNS。修改前记下原设置，结束后恢复；不要直接覆盖电脑正在使用的联网网卡设置。</p>
+        </div></details>
+
+        <h3>3. 准备硬件环境并启动工作台</h3>
+        <p>下面是在项目目录执行的 Windows PowerShell 命令。先准备已安装的 Python 3.14+；没有 <code>py</code> 启动器时，使用该 Python 的完整路径。仅体验演示不需要执行这些命令。</p>
+        <pre class="help-code"><code># 在项目根目录执行（ui_server.py 所在目录）
+py -3.14 --version
+py -3.14 -m venv .venv-hardware
+.\.venv-hardware\Scripts\python.exe -m pip install -r requirements-hardware.txt
+.\.venv-hardware\Scripts\python.exe -c "import sys, importlib.metadata as m; print(sys.version); print(m.version('pymso5000'))"
+.\.venv-hardware\Scripts\python.exe ui_server.py</code></pre>
+        <p>检查结果应为 Python 3.14+、pymso5000 0.2.0；依赖文件会带入 PyVISA / PyVISA-py 等库。依赖安装成功不等于设备已连通，VISA 后端和网络仍需验证。</p>
+        <p>如果旧工作台已占用 8765 端口，先导出要保留的报告，在原服务终端按 Ctrl+C 结束，再用硬件环境启动。只在另一个终端安装依赖不会升级旧服务进程。浏览器继续访问启动时打印的本机地址。</p>
+
+        <h3>4. 在界面建立会话</h3>
+        <ol class="help-steps">
+          <li><strong>识别实际设备</strong><p>实时示波 → 数据来源选「实际示波器」→「扫描已连接设备」，再从下拉框选择实际返回的设备。也可填 IP / 完整 VISA 地址，点击「识别这台设备」。扫描与识别仅发送 *IDN?，不会调整波形配置；最多检查 8 个资源，不扫描整段网段。</p></li>
+          <li><strong>核对身份与支持状态</strong><p>检查厂商、型号、序列号、固件和地址是否符合实际。没有适配器或身份读取失败时，不能开始监看；可由仪器导出 CSV 后离线分析。通道列表按匹配型号的基础配置生成，已授权升级的额外通道暂不自动探测。</p></li>
+          <li><strong>选查看方式</strong><p>有匹配适配器后，要测量与冻结分析，选「波形曲线」，再选择列表中已在仪器面板启用的电压通道。要看仪器屏幕上的菜单、各通道与读数，选「示波器原屏截图」。功能是否可用取决于适配器，而不只是能否识别型号。</p></li>
+          <li><strong>开始并确认数据</strong><p>初次建议 1 秒或 500 ms 目标刷新间隔。确认允许建立连接与读取后，点击「开始监看」。首次收到有效帧后才显示「正在监看」；核对来源标记、帧号、接收时刻与仪器面板是否相符。</p></li>
+        </ol>
+        <p class="help-tip">波形读取可能改变传输源 / 模式并消耗错误队列，不承诺恢复原配置。项目不会发送仪器 RUN/STOP、Autoscale、Reset 或启用输出。首版仅完成源码核对和假设备测试，尚未实机验收。</p>
+        <p class="help-sources">依据：<a href="https://www.rigol.com/dam/global/downloads/brochures/en/user-manual/oscilloscopes/MSO5000_UserGuide_EN.pdf" target="_blank" rel="noopener noreferrer">RIGOL MSO5000 官方用户手册，第 20 章</a>；<a href="https://github.com/mabl/pyMSO5000/blob/v0.2.0/pyproject.toml" target="_blank" rel="noopener noreferrer">pymso5000 v0.2.0 依赖声明</a>。</p>
+      </div>
+    </details>
+
+    <details class="help-section">
+      <summary><span class="help-step">03</span>实时示波：选视图、读状态与停止</summary>
+      <div class="help-section-body">
+        <div class="help-table-wrap"><table class="help-table"><caption>按目的选择查看方式</caption><thead><tr><th scope="col">想做什么</th><th scope="col">选择与实际能力</th></tr></thead><tbody>
+          <tr><td>看信号变化并测量</td><td>波形曲线：读取单个模拟通道的 NORMal 采样，每帧最多 10,000 点；显示周期候选、峰峰值、RMS 和阈值占空比，可冻结分析。</td></tr>
+          <tr><td>直接看示波器屏幕</td><td>示波器原屏截图：周期读取设备当时的屏幕图片，内容取决于仪器当前显示。只能查看，没有触屏控制，也不从图片提取数值，因此不能冻结成采样分析。</td></tr>
+          <tr><td>无设备熟悉流程</td><td>动态合成演示：软件生成两个通道；可练习监看、隐藏通道、冻结与导出。其帧率不能代表实机性能。</td></tr>
+        </tbody></table></div>
+        <h3>刷新间隔怎么选？</h3>
+        <p>可选 200 ms 至 5 秒。先用 500 ms 或 1 秒；如果传输慢或截图更新不及时，停止后改为 2 秒或 5 秒。设置的是目标间隔，设备与网络不一定能达到；200 ms 不保证每秒五帧。</p>
+        <h3>下面几个状态怎么看？</h3>
+        <ul class="help-bullets">
+          <li><strong>帧号：</strong>本次会话收到的帧序号，重新开始会重置。帧号增长不证明设备产生了新的采集记录。</li>
+          <li><strong>接收帧率：</strong>后台实际收到完整帧的速率，不是示波器 ADC 采样率，也不一定等于浏览器绘制帧率。</li>
+          <li><strong>接收时刻 / 数据年龄：</strong>最后收到一帧的时间和距今多久；不是硬件触发时间。运行中超过 3 秒或目标间隔三倍（取较大者）没有新帧，会标记数据陈旧。</li>
+          <li><strong>停止与重连：</strong>点击「停止监看」结束电脑读取并关闭会话，保留最后一帧；不会停止示波器本身的采集。等「正在断开」结束后，再改来源、通道、视图或刷新间隔，然后重新开始。</li>
+        </ul>
+        <p class="help-tip">这是周期监看，不能连续无遗漏录波。示波器本身已停止采集时，可能重复返回同一记录。罕见毛刺应在仪器上配置硬件触发；未观察到不能证明不存在。</p>
+      </div>
+    </details>
+
+    <details class="help-section">
+      <summary><span class="help-step">04</span>实用操作：冻结、选区复查与前后对比</summary>
+      <div class="help-section-body">
+        <h3>用法 A：调试 PWM 频率与占空比</h3>
+        <ol class="help-steps">
+          <li><strong>先在仪器上看清几个周期</strong><p>在面板选择合适的时基、量程与触发，再在本项目选择该通道的「波形曲线」。手动改变被测板的工作状态，观察周期候选、峰峰值和阈值占空比是否随之变化。</p></li>
+          <li><strong>保留值得检查的那一帧</strong><p>点击「冻结此帧并分析」。工作台会锁定点击时显示帧的完整采样，停止监看并执行本地规则分析；不会自动调用付费模型。</p></li>
+          <li><strong>复查局部证据</strong><p>拖动选择时间段，或在下方输入开始 / 结束时间（单位 ms），选择通道并点「复查选区」。选区至少包含四个原始点；周期判断通常还需要更多完整周期。到「证据」展开工具结果，再核对仪器条件。</p></li>
+          <li><strong>保存结果</strong><p>点击「导出报告」。冻结帧 ZIP 额外包含 live-frame.csv 与 metadata.json，连同测量、工具证据和预览一起保存。仅有截图时不能执行这套数值分析。</p></li>
+        </ol>
+        <h3>用法 B：比较两种工作状态</h3>
+        <p>先在正常状态冻结并导出一帧，再回到实时示波，复现另一工作状态，冻结并导出第二帧。解压两份 ZIP，通过「导入波形」将第二帧的 live-frame.csv 作为当前波形、第一帧作为参考波形，并附上第二帧的 metadata.json。保持通道名称、探头倍率、耦合、时基与工况说明可比，再查看标量差值；差值本身不等于故障。</p>
+        <p>可以继续在「分析助手」输入问题。本地规则执行固定测量与补测流程，不能理解所有自由提问；配置模型服务后才能主动选择模型分析。没有测试限值时只给观测，不默认判合格；需要限值判断时，在导入窗口附上限值 JSON。</p>
+        <h3>已有 CSV，也可以直接开始</h3>
+        <p>使用 UTF-8 CSV：时间列为 time_s（秒），电压通道以 _V 结尾（伏特），时间严格递增且至少四点。可选参考 CSV、限值 JSON 和采集说明 JSON；全部上传合计不超过 32 MiB，每份 JSON 不超过 128 KiB。指针读数是预览近似值，正式测量使用原始采样。</p>
+        <p class="help-tip">最近仅缓存五帧供冻结，画面滞后可能提示帧已过期；先停止并等最后一帧显示，再重试冻结。关闭或刷新页面前先导出重要结果。边沿受采样分辨率限制、FFT 峰不等于基频，不能仅凭一段波形确定电路根因。</p>
+      </div>
+    </details>
+
+    <details class="help-section">
+      <summary><span class="help-step">05</span>连接不上、画面不动或无法冻结怎么办？</summary>
+      <div class="help-section-body">
+        <ol class="help-steps">
+          <li><strong>先检查实际运行的 Python</strong><p>提示版本或模块错误时，确认是用 .venv-hardware 的 Python 3.14+ 启动服务，且同一环境安装了固定版本依赖。离线 Python 3.12 可以演示，但不能运行这个硬件适配器。</p></li>
+          <li><strong>再检查物理连接与 IP</strong><p>查看网线、示波器 LAN 状态、当前 IP 和子网，排除访客网络隔离、重复 IP 或 DHCP 地址变化。电脑可运行 ipconfig 查看网卡地址，运行 ping 后接实际设备 IP 辅助排查；ping 成功不等于 VISA 可用，失败也可能是 ICMP 被拦截。</p></li>
+          <li><strong>检查资源类型和会话占用</strong><p>填写设备 IPv4、TCPIP INSTR 或完整 USB INSTR 资源，不填工作台的 127.0.0.1、网页 URL 或 SOCKET 资源。扫描为空不证明没有设备，可手动输入地址识别；USB 还依赖后端与系统驱动。暂时退出其他占用仪器的控制程序，再检查链路；不要通过关闭整个防火墙来排障。</p></li>
+          <li><strong>画面不变，先看设备是否还在采集</strong><p>确认仪器面板的 RUN/STOP 状态、触发条件、已启用通道和输入信号。也可能只是稳定信号重复显示；如果数据年龄持续增长或提示错误，停止监看并核对链路。项目不会自动替你发送 RUN。</p></li>
+          <li><strong>有图但不能冻结</strong><p>原屏截图没有数值采样，需停止后切换到波形曲线。曲线尚未收到完整帧、帧已过期或正在断开时也不能冻结。若提示点数超限，核对 NORMal 返回点数；当前实时曲线上限为 10,000 点，不用它代替 RAW 深存储采集。</p></li>
+          <li><strong>等断开完成再重连</strong><p>本地服务同时只运行一个监看会话，多个页面共享它；旧会话关闭中会拒绝新连接。读取出错不会替换为演示数据。关闭标签页只会尽力请求停止；浏览器异常退出后，可重新打开工作台停止监看，或正常结束服务。</p></li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="help-section">
+      <summary><span class="help-step">06</span>本机保存、模型使用与隐私</summary>
+      <div class="help-section-body"><p>界面仅监听本机，默认离线。导入记录和冻结帧暂存在工作区 .ui-data，同时保留最近三份；淘汰或正常结束服务时清理，不提供历史恢复。报告需主动导出，普通导入报告不附原始 CSV，请保管自己的输入文件。</p><p>模型分析可点击分析助手中的「模型设置」，填写服务地址、模型名称和 API Key；也可在启动前配置 SCOPE_BASE_URL、SCOPE_MODEL 和 SCOPE_API_KEY。页面配置仅对本次服务生效，不落盘，重启后需重新配置；每次保存留空密钥会清除旧值。保存后会自动选中「模型分析」，点击「开始分析」才发送请求。问题、源文件名 / 摘要与工具测量结果会发给配置的服务，不默认发送整份原始采样；模型叙述仍需核对证据。示波器连接许可不等于允许模型自动控制仪器。</p></div>
+    </details>
+    <div class="help-end"><span>连接步骤依据手册与当前实现整理；真实设备仍待现场验收。</span><button type="button" class="button secondary dialog-close">关闭说明</button></div>
+  </div>
+</dialog>
+</body>
+</html>

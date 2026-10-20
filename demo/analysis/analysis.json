@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "source_csv": "synthetic_waveforms.csv",
+  "source_sha256": "2a70f4301adf4c7319d1cbdffc8ed91e90153334f297c69e6fe87cd59d633c3b",
+  "source_kind": "offline_csv_unverified_acquisition",
+  "analysis_scope": "sampled-record measurements, not instrument certification or root-cause diagnosis",
+  "channels": {
+    "SYNTH_SINE_V": {
+      "sample_count": 20000,
+      "duration_s": 0.019999,
+      "median_sample_interval_s": 1.0000000000001327e-06,
+      "uniform_sampling_within_1pct": true,
+      "largest_sample_gap_s": 1.000000000001e-06,
+      "statistics": {
+        "min_v": -0.8,
+        "max_v": 1.2,
+        "vpp_v": 2.0,
+        "mean_v": 0.20000078530824236,
+        "rms_v": 0.7348641307794465,
+        "ac_rms_v": 0.7071244420767236,
+        "method": "time-weighted trapezoidal sampled moments"
+      },
+      "estimated_levels": {
+        "low_v": -0.7876883405951376,
+        "high_v": 1.1876883405951377,
+        "method": "5th/95th percentiles"
+      },
+      "timing": {
+        "status": "periodic_candidate",
+        "rising_edges": 99,
+        "falling_edges": 100,
+        "complete_periods": 98,
+        "frequency_hz": 4999.999999999998,
+        "duty_cycle_pct": 50.0,
+        "period_variation_observed_s": 1.1449262525471098e-18,
+        "short_pulse_candidates": 0,
+        "median_period_s": 0.0002000000000000001,
+        "unusual_period_indices": [],
+        "median_high_width_s": 9.99999999999994e-05
+      },
+      "spectrum": {
+        "status": "windowed_fft_bin_estimate",
+        "dominant_bin_hz": 4999.999999999336,
+        "bin_spacing_hz": 49.99999999999336,
+        "nyquist_hz": 499999.99999993364,
+        "window": "Hann",
+        "is_fundamental_verified": false
+      },
+      "rise_time": {
+        "status": "observed_estimate",
+        "observed_s": 5.799955809484918e-05,
+        "transitions_used": 99,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "fall_time": {
+        "status": "observed_estimate",
+        "observed_s": 5.799955809484929e-05,
+        "transitions_used": 100,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "warnings": [
+        "ADC range, probe calibration, analog bandwidth and acquisition gaps outside this record are unknown."
+      ],
+      "pass_fail": "not_evaluated_no_user_limits"
+    },
+    "SYNTH_PWM_V": {
+      "sample_count": 20000,
+      "duration_s": 0.019999,
+      "median_sample_interval_s": 1.0000000000001327e-06,
+      "uniform_sampling_within_1pct": true,
+      "largest_sample_gap_s": 1.000000000001e-06,
+      "statistics": {
+        "min_v": 0.0,
+        "max_v": 3.3,
+        "vpp_v": 3.3,
+        "mean_v": 0.9917820891044553,
+        "rms_v": 1.8091105256574853,
+        "ac_rms_v": 1.5130264973807646,
+        "method": "time-weighted trapezoidal sampled moments"
+      },
+      "estimated_levels": {
+        "low_v": 0.0,
+        "high_v": 3.3,
+        "method": "5th/95th percentiles"
+      },
+      "timing": {
+        "status": "periodic_candidate",
+        "rising_edges": 19,
+        "falling_edges": 20,
+        "complete_periods": 18,
+        "frequency_hz": 1000.0,
+        "duty_cycle_pct": 30.099999999999945,
+        "period_variation_observed_s": 9.857697483082738e-19,
+        "short_pulse_candidates": 0,
+        "median_period_s": 0.001,
+        "unusual_period_indices": [],
+        "median_high_width_s": 0.0003009999999999992
+      },
+      "spectrum": {
+        "status": "windowed_fft_bin_estimate",
+        "dominant_bin_hz": 999.9999999998672,
+        "bin_spacing_hz": 49.99999999999336,
+        "nyquist_hz": 499999.99999993364,
+        "window": "Hann",
+        "is_fundamental_verified": false
+      },
+      "rise_time": {
+        "status": "sample_limited",
+        "observed_s": 8.000000000004531e-07,
+        "transitions_used": 19,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "fall_time": {
+        "status": "sample_limited",
+        "observed_s": 8.000000000013205e-07,
+        "transitions_used": 20,
+        "definition": "10–90% of estimated 5th/95th percentile levels",
+        "physical_edge_time_verified": false
+      },
+      "warnings": [
+        "ADC range, probe calibration, analog bandwidth and acquisition gaps outside this record are unknown."
+      ],
+      "pass_fail": "not_evaluated_no_user_limits"
+    }
+  },
+  "next_steps": [
+    "Confirm units, probe attenuation, coupling, bandwidth, trigger and capture mode.",
+    "Use retained raw samples and an appropriate timebase for suspected narrow events.",
+    "Compare simultaneous channels in a shared acquisition before inferring event order."
+  ]
+}

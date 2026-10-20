@@ -1,0 +1,1 @@
+Synthetic data, not measured. CH1: 5 kHz sine, 2 Vpp, 0.2 V offset. CH2: 1 kHz PWM, 3.3 V, nominal 30% duty. Sampling: 1 MSa/s.
